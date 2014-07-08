@@ -1,5 +1,3 @@
-require 'pry'
-
 def calculate_total(cards) #[[suit, card],[ 'H', '3']]
   values = cards.map{|e| e[1]}
   score = 0
@@ -19,17 +17,19 @@ def calculate_total(cards) #[[suit, card],[ 'H', '3']]
   score
 end
 
-puts "Welcome to blackjack"
+system 'cls'
+puts "Welcome to blackjack\n\n".center(80)
 puts "What is your name?"
 name = gets.chomp
-puts "Hi " + name + ", let's play some blackjack!"
+puts "Hi #{name}, let's play some blackjack!\n\n".center(80)
 gets
-suit = ["Hearts", "Clubs", "Diamonds", "Spades"]
+suit = ["Hearts", "Clubs", "Diamonds", "Spades"] * 6
 cards = ['2','3','4','5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 
 keep_playing = true
 
 while keep_playing == true 
+  system 'cls'
   deck = suit.product(cards)
   deck.shuffle!
   mycards = []
@@ -39,62 +39,109 @@ while keep_playing == true
   dealercards << deck.pop
   mycards  << deck.pop
   dealercards << deck.pop
-  blackjack = false
-  dealerblackjack = false
 
   dealertotal = calculate_total(dealercards)
   mytotal = calculate_total(mycards)
-  puts "Dealer has: #{dealercards[0]} and #{dealercards[1]}, for a total of #{dealertotal}"
-  puts name + " has: #{mycards[0]} and #{mycards[1]}, for a total of #{mytotal}\n"
+  puts "Dealer has: #{dealercards[0]} and #{dealercards[1]}, for a total of #{dealertotal}\n"
+  gets
+  puts "#{name} has: #{mycards[0]} and #{mycards[1]}, for a total of #{mytotal}\n"
+  gets
 
-  bust = false
+  blackjack = false
+  playerbust = false
+  dealerbust = false
+  gameover = false
+
   if mytotal == 21 || dealertotal == 21
-    puts "BLACKJACK!"
+    system 'cls'
+    puts "BLACKJACK!".center(80) * 50
     blackjack = true
+    gets
   end
 
-  if blackjack == false
-  puts "What would you like to do " + name+ "? 1) hit or 2) stay"
-  hit_or_stay = gets.chomp
-  end
+  while mytotal < 21 && blackjack == false && playerbust == false
+    puts "What would you like to do #{name}? 1) hit or 2) stay?\n"
+    hit_or_stay = gets.chomp
+    if !['1','2'].include?(hit_or_stay)
+      puts "Error: please enter either 1) hit or 2) stay\n"
+      next
+    end
 
-  while hit_or_stay == '1' && bust == false && blackjack == false
+    if hit_or_stay == "2"
+      puts "You decided to stay with a score of #{mytotal}\n"
+      gets
+      break
+    end
+
     mycards  << deck.pop
     mytotal = calculate_total(mycards)
-    puts name +" drew: #{mycards.last}, for a total of #{mytotal}"
+    puts "#{name} drew: #{mycards.last}, for a total of #{mytotal}\n"
+    gets
     if mytotal > 21
-      puts name + " BUST!"
-      bust = true
-      break
-    else
-      puts "What would you like to do " + name+ "? 1) hit or 2) stay"
-      hit_or_stay = gets.chomp
+      puts "#{name} BUST!".center(80)
+      playerbust = true
+      gets
+    elsif mytotal == 21
+      puts "BLACKJACK".center(80) * 50
+      blackjack = true
+      gets
     end
   end
-  dealerbust = false
-  while dealertotal < 17 && bust == false && dealerbust == false && blackjack == false
+
+  if dealertotal == 21
+    puts "Sorry, dealer hit blackjack. You lose.".center(80)
+    blackjack = true
+    gets
+  end
+
+  while dealertotal < 17 && blackjack == false && playerbust == false && dealerbust == false 
     dealercards << deck.pop
     dealertotal = calculate_total(dealercards)
     puts "Dealer drew : #{dealercards.last} for a total of #{dealertotal}"
+    gets
     if dealertotal > 21
+      puts "Dealer BUSTED!".center(80)
       dealerbust = true
-      puts "Dealer BUSTED! You win!"
+      gets
     end
   end
+  system 'cls'
+#compare hands
+  puts "#{name}'s cards are: "
+  mycards.each do |card|
+    puts "#{card}"
+  end
+  gets
+  puts "Dealer's cards are: "
+  dealercards.each do |card|
+    puts "#{card}"
+  end
+  gets
+  puts "Scores are: #{name} : #{mytotal} ---- Dealer's : #{dealertotal}"
+  gets
 
-  if mytotal > dealertotal && bust == false || dealerbust == true
-    puts "You won!"
+  if mytotal > dealertotal && playerbust == false || dealerbust == true
+    puts "Congratulations, you won!".center(80)
+  elsif mytotal < dealertotal && dealerbust == false || playerbust == true
+    puts "Sorry, you lost!".center(80)
+  else
+    puts "It's a tie!".center(80)
+  end
+
+  while gameover == false
     puts "Play again?(y/n)"
     answer = gets.chomp
-      if answer.downcase != 'y'
-        keep_playing = false
-      end
-  else puts name +" lost! Sorry..."
-    puts "Play again?(y/n)"
-    answer = gets.chomp
-      if answer != 'y'
-        keep_playing = false
-        puts "Thanks for playing!"
-      end
+    if !['y','n'].include?(answer.downcase)
+      puts "Error: Please enter (y/n)"
+      next
+    end 
+    if answer.downcase != 'y'
+      keep_playing = false
+      puts "Thanks for playing blackjack!"
+      gameover = true
+      gets
+    else
+      gameover = true
+    end
   end
 end
